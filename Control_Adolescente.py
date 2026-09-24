@@ -11,7 +11,7 @@ import re
 st.set_page_config(page_title="Servicio de Obstetricia - Control del Adolescente (Vertical)", layout="wide")
 
 st.markdown("### 🏥 Servicio de Obstetricia")
-st.markdown("**Registro para el Control del Adolescente - Formato HIS MINSA (A4 Vertical - Validación y Etiquetas Fijas)**")
+st.markdown("**Registro para el Control del Adolescente - Formato HIS MINSA **")
 
 if "lista_pacientes" not in st.session_state:
     st.session_state.lista_pacientes = []
@@ -30,9 +30,9 @@ col4, col5, col6 = st.columns(3)
 with col4:
     anio = st.text_input("Año", "2026")
 with col5:
-    dni_profesional = st.text_input("DNI del Profesional (Exactamente 8 números)", max_chars=8, value="28210469")
+    dni_profesional = st.text_input("DNI del Profesional (Exactamente 8 números)", max_chars=8, value="", placeholder="Ej: 28210469")
 with col6:
-    nombres_profesional = st.text_input("Nombres del Profesional", "Gladys")
+    nombres_profesional = st.text_input("Nombres del Profesional", value="", placeholder="Apellidos y Nombres")
 
 st.markdown("---")
 
@@ -48,25 +48,27 @@ with st.form("form_paciente", clear_on_submit=True):
     with col_p3:
         nombres_paciente = st.text_input("Nombres y Apellidos del Paciente", placeholder="Apellidos y Nombres")
 
-    col_p4, col_p5, col_p6 = st.columns(3)
+    col_p4, col_p5, col_p6, col_p7 = st.columns(4)
     with col_p4:
         edad_anos = st.number_input("Edad (Años)", min_value=10, max_value=19, value=14)
     with col_p5:
-        talla_str = st.text_input("Talla (cm)", value="", placeholder="Ej: 150.0")
+        sexo_paciente = st.selectbox("Sexo", ["F (Femenino)", "M (Masculino)"])
     with col_p6:
+        talla_str = st.text_input("Talla (cm)", value="", placeholder="Ej: 150.0")
+    with col_p7:
         peso_str = st.text_input("Peso (kg)", value="", placeholder="Ej: 45.0")
 
-    col_p7, col_p8, col_p9 = st.columns(3)
-    with col_p7:
-        perimetro_abd_str = st.text_input("Perímetro Abdominal (cm)", value="", placeholder="Ej: 72.0")
+    col_p8, col_p9, col_p10 = st.columns(3)
     with col_p8:
-        hb_str = st.text_input("Hemoglobina - Hb (g/dl)", value="", placeholder="Ej: 13.0")
+        perimetro_abd_str = st.text_input("Perímetro Abdominal (cm)", value="", placeholder="Ej: 72.0")
     with col_p9:
+        hb_str = st.text_input("Hemoglobina - Hb (g/dl)", value="", placeholder="Ej: 13.0")
+    with col_p10:
         condicion_paciente = st.selectbox("Condición del Paciente", ["C (Continuador)", "N (Nuevo)", "R (Reingresante)"])
 
     st.markdown("---")
     st.markdown("#### 3. Diagnósticos y Procedimientos Oficiales")
-    st.info("Se incluirán automáticamente las actividades y descripciones normadas.")
+    st.info("Se incluirán automáticamente las actividades normadas más 2 líneas adicionales con mayor altura.")
 
     tipo_diagnostico = st.selectbox("Tipo de Diagnóstico / Actividad (HIS)", ["D (Definitivo)", "P (Preventivo)", "R (Repetido)"])
 
@@ -85,8 +87,8 @@ with st.form("form_paciente", clear_on_submit=True):
         else:
             cond_letra = condicion_paciente[0]
             tipo_letra = tipo_diagnostico[0]
+            sexo_letra = sexo_paciente[0]
 
-            # Mostrar siempre las etiquetas de antropometría y Hb (con valor o vacías)
             val_talla = talla_str.strip() if talla_str.strip() != "" else ""
             val_peso = peso_str.strip() if peso_str.strip() != "" else ""
             val_pa = perimetro_abd_str.strip() if perimetro_abd_str.strip() != "" else ""
@@ -100,7 +102,7 @@ with st.form("form_paciente", clear_on_submit=True):
             ]
             antropometria_text = "<br/>".join(lineas_antropometria)
 
-            codigos = ["Z003", "99384", "96150.01", "96150.02", "96150.03", "96150.05", "99402.09", "99401.15", "99403.01"]
+            codigos = ["Z003", "99384", "96150.01", "96150.02", "96150.03", "96150.05", "99402.09", "99401.15", "99403.01", "", ""]
             descripciones = [
                 "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
                 "ATENCIÓN INICIAL Y EXHAUSTIVA DE MEDICINA PREVENTIVA",
@@ -110,16 +112,19 @@ with st.form("form_paciente", clear_on_submit=True):
                 "TAMIZAJE DE SALUD MENTAL EN HABILIDADES SOCIALES",
                 "CONSEJERÍA DE PREVENCIÓN DE RIESGOS EN SALUD MENTAL",
                 "CONSEJERÍA EN HABILIDADES SOCIALES",
-                "CONSEJERÍA NUTRICIONAL: ALIMENTACIÓN SALUDABLE"
+                "CONSEJERÍA NUTRICIONAL: ALIMENTACIÓN SALUDABLE",
+                "<br/>",
+                "<br/>"
             ]
-            labs = ["", "2", "", "", "", "", "1", "", "2"]
-            prds = [tipo_letra] * 9
+            labs = ["", "2", "", "", "", "", "1", "", "2", "", ""]
+            prds = [tipo_letra] * 9 + ["", ""]
 
             nuevo_paciente = {
                 "nro": len(st.session_state.lista_pacientes) + 1,
                 "dni": dni_pac_limpio,
                 "nombres": nombres_paciente,
                 "edad": edad_anos,
+                "sexo": sexo_letra,
                 "fecha_nac": str(fecha_atencion),
                 "antropometria": antropometria_text,
                 "condicion": cond_letra,
@@ -137,12 +142,12 @@ if len(st.session_state.lista_pacientes) > 0:
     st.markdown(f"### 📋 Pacientes Registrados ({len(st.session_state.lista_pacientes)})")
     
     df_preview = pd.DataFrame([{
-        "nro": p["nro"], "dni": p["dni"], "nombres": p["nombres"], "edad": p["edad"],
+        "nro": p["nro"], "dni": p["dni"], "nombres": p["nombres"], "edad": p["edad"], "sexo": p["sexo"],
         "antropometria": p["antropometria"].replace("<br/>", " | "), "condicion": p["condicion"],
-        "codigos": "<br/>".join(p["codigos"]),
-        "diagnosticos": "<br/>".join(p["descripciones"]),
+        "codigos": "<br/>".join([c if c != "" else "(En blanco)" for c in p["codigos"]]),
+        "diagnosticos": "<br/>".join([d if d != "<br/>" else "(En blanco grande)" for d in p["descripciones"]]),
         "labs": "<br/>".join([l if l != "" else "-" for l in p["labs"]]),
-        "prd": "<br/>".join(p["prds"])
+        "prd": "<br/>".join([pr if pr != "" else "-" for pr in p["prds"]])
     } for p in st.session_state.lista_pacientes])
     
     st.dataframe(df_preview, use_container_width=True)
@@ -154,7 +159,7 @@ if len(st.session_state.lista_pacientes) > 0:
             st.rerun()
 
     with col_btn2:
-        if st.button("📄 Generar PDF A4 Vertical Final"):
+        if st.button("📄 Generar PDF A4 Vertical (Edad Ajustada)"):
             buffer = io.BytesIO()
             doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=10, leftMargin=10, topMargin=10, bottomMargin=10)
             styles = getSampleStyleSheet()
@@ -165,6 +170,10 @@ if len(st.session_state.lista_pacientes) > 0:
             
             cell_style = ParagraphStyle('CellStyle', parent=styles['Normal'], fontSize=5.5, leading=6.8, textColor=colors.black)
             cell_center = ParagraphStyle('CellCenter', parent=styles['Normal'], fontSize=5.5, leading=6.8, alignment=1, textColor=colors.black)
+            
+            # Estilo específico para la edad: tamaño más compacto para que no salte de línea
+            cell_edad = ParagraphStyle('CellEdad', parent=styles['Normal'], fontSize=5, leading=6, alignment=1, textColor=colors.black)
+            
             header_style = ParagraphStyle('HeaderStyle', parent=styles['Normal'], fontSize=5.8, leading=7, alignment=1, fontName='Helvetica-Bold', textColor=colors.black)
 
             elements = []
@@ -173,8 +182,7 @@ if len(st.session_state.lista_pacientes) > 0:
             turno_t = "X" if "Tarde" in turno_op else ""
             turno_n = "X" if "Noche" in turno_op else ""
 
-            # Dividir la lista de pacientes en bloques de hasta 5 por página
-            chunks = [st.session_state.lista_pacientes[i:i + 5] for i in range(0, len(st.session_state.lista_pacientes), 5)]
+            chunks = [st.session_state.lista_pacientes[i:i + 4] for i in range(0, len(st.session_state.lista_pacientes), 4)]
 
             for page_idx, chunk in enumerate(chunks):
                 top_left_data = [
@@ -260,6 +268,7 @@ if len(st.session_state.lista_pacientes) > 0:
                     Paragraph("<b>DNI</b>", header_style),
                     Paragraph("<b>Nombres y Apellidos del Paciente</b>", header_style),
                     Paragraph("<b>Edad</b>", header_style),
+                    Paragraph("<b>Sexo</b>", header_style),
                     Paragraph("<b>F. Atención</b>", header_style),
                     Paragraph("<b>Antropometría / Hb</b>", header_style),
                     Paragraph("<b>N/C/R</b>", header_style),
@@ -273,7 +282,7 @@ if len(st.session_state.lista_pacientes) > 0:
                 
                 for p in chunk:
                     sub_rows = []
-                    for cod, desc, lab, prd in zip(p["codigos"], p["descripciones"], p["labs"], p["prds"]):
+                    for idx, (cod, desc, lab, prd) in enumerate(zip(p["codigos"], p["descripciones"], p["labs"], p["prds"])):
                         sub_rows.append([
                             Paragraph(cod, cell_center),
                             Paragraph(desc, cell_style),
@@ -289,6 +298,9 @@ if len(st.session_state.lista_pacientes) > 0:
                         ('RIGHTPADDING', (0,0), (-1,-1), 1),
                     ]
                     
+                    sub_style.append(('TOPPADDING', (0, 9), (-1, 10), 6.5))
+                    sub_style.append(('BOTTOMPADDING', (0, 9), (-1, 10), 6.5))
+
                     for i in range(len(sub_rows) - 1):
                         sub_style.append(('LINEBELOW', (0, i), (-1, i), 0.25, colors.HexColor('#cbd5e0')))
 
@@ -299,14 +311,16 @@ if len(st.session_state.lista_pacientes) > 0:
                         Paragraph(str(p["nro"]), cell_center),
                         Paragraph(p["dni"], cell_center),
                         Paragraph(p["nombres"], cell_style),
-                        Paragraph(str(p["edad"]), cell_center),
+                        Paragraph(str(p["edad"]), cell_edad),  # <--- Aplicado el estilo ajustado para la edad
+                        Paragraph(p["sexo"], cell_center),
                         Paragraph(p["fecha_nac"], cell_center),
                         Paragraph(p["antropometria"], cell_center),
                         Paragraph(p["condicion"], cell_center),
                         t_sub_paciente, "", "", ""
                     ])
 
-                t = Table(table_data, colWidths=[15, 42, 86, 20, 42, 60, 21, 40, 114, 18, 20])
+                # Ancho de columnas ajustado: Edad pasa de 18 a 23 para evitar saltos
+                t = Table(table_data, colWidths=[15, 42, 75, 23, 18, 42, 60, 21, 40, 114, 18, 20])
                 
                 t_style_commands = [
                     ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#2b6cb0')),
@@ -320,11 +334,11 @@ if len(st.session_state.lista_pacientes) > 0:
                 ]
                 
                 for row_idx in range(1, len(chunk) + 1):
-                    t_style_commands.append(('SPAN', (7, row_idx), (10, row_idx)))
-                    t_style_commands.append(('LEFTPADDING', (7, row_idx), (10, row_idx), 0))
-                    t_style_commands.append(('RIGHTPADDING', (7, row_idx), (10, row_idx), 0))
-                    t_style_commands.append(('TOPPADDING', (7, row_idx), (10, row_idx), 0))
-                    t_style_commands.append(('BOTTOMPADDING', (7, row_idx), (10, row_idx), 0))
+                    t_style_commands.append(('SPAN', (8, row_idx), (11, row_idx)))
+                    t_style_commands.append(('LEFTPADDING', (8, row_idx), (11, row_idx), 0))
+                    t_style_commands.append(('RIGHTPADDING', (8, row_idx), (11, row_idx), 0))
+                    t_style_commands.append(('TOPPADDING', (8, row_idx), (11, row_idx), 0))
+                    t_style_commands.append(('BOTTOMPADDING', (8, row_idx), (11, row_idx), 0))
 
                 t.setStyle(TableStyle(t_style_commands))
                 elements.append(t)
@@ -336,8 +350,8 @@ if len(st.session_state.lista_pacientes) > 0:
             buffer.seek(0)
 
             st.download_button(
-                label="📥 Descargar PDF A4 Vertical Final",
+                label="📥 Descargar PDF A4 Vertical (Edad en una línea)",
                 data=buffer,
-                file_name="Hoja_HIS_A4_Vertical_Final.pdf",
+                file_name="Hoja_HIS_A4_Vertical_Edad_Ajustada.pdf",
                 mime="application/pdf"
             )
