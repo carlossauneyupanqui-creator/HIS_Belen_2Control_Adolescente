@@ -11,7 +11,7 @@ import re
 st.set_page_config(page_title="Servicio de Obstetricia - Control del Adolescente (Vertical)", layout="wide")
 
 st.markdown("### 🏥 Servicio de Obstetricia")
-st.markdown("**Registro para el Control del Adolescente - Formato HIS MINSA **")
+st.markdown("**Registro para el Control del Adolescente - Formato HIS MINSA (A4 Vertical - Día al lado izquierdo del DNI)**")
 
 if "lista_pacientes" not in st.session_state:
     st.session_state.lista_pacientes = []
@@ -125,7 +125,7 @@ with st.form("form_paciente", clear_on_submit=True):
                 "nombres": nombres_paciente,
                 "edad": edad_anos,
                 "sexo": sexo_letra,
-                "fecha_nac": str(fecha_atencion),
+                "dia_atencion": fecha_atencion.strftime("%d"),
                 "antropometria": antropometria_text,
                 "condicion": cond_letra,
                 "codigos": codigos,
@@ -142,7 +142,7 @@ if len(st.session_state.lista_pacientes) > 0:
     st.markdown(f"### 📋 Pacientes Registrados ({len(st.session_state.lista_pacientes)})")
     
     df_preview = pd.DataFrame([{
-        "nro": p["nro"], "dni": p["dni"], "nombres": p["nombres"], "edad": p["edad"], "sexo": p["sexo"],
+        "nro": p["nro"], "dia": p["dia_atencion"], "dni": p["dni"], "nombres": p["nombres"], "edad": p["edad"], "sexo": p["sexo"],
         "antropometria": p["antropometria"].replace("<br/>", " | "), "condicion": p["condicion"],
         "codigos": "<br/>".join([c if c != "" else "(En blanco)" for c in p["codigos"]]),
         "diagnosticos": "<br/>".join([d if d != "<br/>" else "(En blanco grande)" for d in p["descripciones"]]),
@@ -159,7 +159,7 @@ if len(st.session_state.lista_pacientes) > 0:
             st.rerun()
 
     with col_btn2:
-        if st.button("📄 Generar PDF A4 Vertical (Edad Ajustada)"):
+        if st.button("📄 Generar PDF A4 Vertical (Día al lado izquierdo del DNI)"):
             buffer = io.BytesIO()
             doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=10, leftMargin=10, topMargin=10, bottomMargin=10)
             styles = getSampleStyleSheet()
@@ -170,10 +170,7 @@ if len(st.session_state.lista_pacientes) > 0:
             
             cell_style = ParagraphStyle('CellStyle', parent=styles['Normal'], fontSize=5.5, leading=6.8, textColor=colors.black)
             cell_center = ParagraphStyle('CellCenter', parent=styles['Normal'], fontSize=5.5, leading=6.8, alignment=1, textColor=colors.black)
-            
-            # Estilo específico para la edad: tamaño más compacto para que no salte de línea
             cell_edad = ParagraphStyle('CellEdad', parent=styles['Normal'], fontSize=5, leading=6, alignment=1, textColor=colors.black)
-            
             header_style = ParagraphStyle('HeaderStyle', parent=styles['Normal'], fontSize=5.8, leading=7, alignment=1, fontName='Helvetica-Bold', textColor=colors.black)
 
             elements = []
@@ -263,13 +260,14 @@ if len(st.session_state.lista_pacientes) > 0:
                 elements.append(t_meta)
                 elements.append(Spacer(1, 4))
 
+                # Orden de cabeceras: N°, Día, DNI, Nombres, Edad, Sexo, Antropometría, Condición, CIE/CPT, Actividades, Lab, P/D/R
                 headers = [
                     Paragraph("<b>N°</b>", header_style),
+                    Paragraph("<b>Día</b>", header_style),
                     Paragraph("<b>DNI</b>", header_style),
                     Paragraph("<b>Nombres y Apellidos del Paciente</b>", header_style),
                     Paragraph("<b>Edad</b>", header_style),
                     Paragraph("<b>Sexo</b>", header_style),
-                    Paragraph("<b>F. Atención</b>", header_style),
                     Paragraph("<b>Antropometría / Hb</b>", header_style),
                     Paragraph("<b>N/C/R</b>", header_style),
                     Paragraph("<b>CIE / CPT</b>", header_style),
@@ -307,20 +305,21 @@ if len(st.session_state.lista_pacientes) > 0:
                     t_sub_paciente = Table(sub_rows, colWidths=[40, 114, 18, 18])
                     t_sub_paciente.setStyle(TableStyle(sub_style))
 
+                    # Orden de datos de fila ajustado: N°, Día, DNI, Nombres, Edad, Sexo...
                     table_data.append([
                         Paragraph(str(p["nro"]), cell_center),
+                        Paragraph(p["dia_atencion"], cell_center),
                         Paragraph(p["dni"], cell_center),
                         Paragraph(p["nombres"], cell_style),
-                        Paragraph(str(p["edad"]), cell_edad),  # <--- Aplicado el estilo ajustado para la edad
+                        Paragraph(str(p["edad"]), cell_edad),
                         Paragraph(p["sexo"], cell_center),
-                        Paragraph(p["fecha_nac"], cell_center),
                         Paragraph(p["antropometria"], cell_center),
                         Paragraph(p["condicion"], cell_center),
                         t_sub_paciente, "", "", ""
                     ])
 
-                # Ancho de columnas ajustado: Edad pasa de 18 a 23 para evitar saltos
-                t = Table(table_data, colWidths=[15, 42, 75, 23, 18, 42, 60, 21, 40, 114, 18, 20])
+                # Anchos ajustados sumando 478 en total: N°(15), Día(20), DNI(42), Nombres(85), Edad(23), Sexo(18), Antropometría(60), N/C/R(21), CIE(40), Actividades(114), Lab(18), P/D/R(22)
+                t = Table(table_data, colWidths=[15, 20, 42, 85, 23, 18, 60, 21, 40, 114, 18, 22])
                 
                 t_style_commands = [
                     ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#2b6cb0')),
@@ -350,8 +349,8 @@ if len(st.session_state.lista_pacientes) > 0:
             buffer.seek(0)
 
             st.download_button(
-                label="📥 Descargar PDF A4 Vertical (Edad en una línea)",
+                label="📥 Descargar PDF A4 Vertical (Día al lado izquierdo de DNI)",
                 data=buffer,
-                file_name="Hoja_HIS_A4_Vertical_Edad_Ajustada.pdf",
+                file_name="Hoja_HIS_A4_Vertical_Dia_Izq.pdf",
                 mime="application/pdf"
             )
