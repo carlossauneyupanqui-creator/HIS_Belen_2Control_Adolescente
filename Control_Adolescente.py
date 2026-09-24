@@ -11,7 +11,7 @@ import re
 st.set_page_config(page_title="Servicio de Obstetricia - Control del Adolescente (Vertical)", layout="wide")
 
 st.markdown("### 🏥 Servicio de Obstetricia")
-st.markdown("**Registro para el Control del Adolescente - Formato HIS MINSA (A4 Vertical - Llenado Completo)**")
+st.markdown("**Registro para el Control del Adolescente - Formato HIS MINSA (A4 Vertical - Validación y Etiquetas Fijas)**")
 
 if "lista_pacientes" not in st.session_state:
     st.session_state.lista_pacientes = []
@@ -30,7 +30,7 @@ col4, col5, col6 = st.columns(3)
 with col4:
     anio = st.text_input("Año", "2026")
 with col5:
-    dni_profesional = st.text_input("DNI del Profesional (Responsable)", "28210469")
+    dni_profesional = st.text_input("DNI del Profesional (Exactamente 8 números)", max_chars=8, value="28210469")
 with col6:
     nombres_profesional = st.text_input("Nombres del Profesional", "Gladys")
 
@@ -52,14 +52,16 @@ with st.form("form_paciente", clear_on_submit=True):
     with col_p4:
         edad_anos = st.number_input("Edad (Años)", min_value=10, max_value=19, value=14)
     with col_p5:
-        talla_str = st.text_input("Talla (cm)", value="", placeholder="Ej: 150.0 o dejar en blanco")
+        talla_str = st.text_input("Talla (cm)", value="", placeholder="Ej: 150.0")
     with col_p6:
-        peso_str = st.text_input("Peso (kg)", value="", placeholder="Ej: 45.0 o dejar en blanco")
+        peso_str = st.text_input("Peso (kg)", value="", placeholder="Ej: 45.0")
 
-    col_p7, col_p8 = st.columns(2)
+    col_p7, col_p8, col_p9 = st.columns(3)
     with col_p7:
-        hb_str = st.text_input("Hemoglobina - Hb (g/dl)", value="", placeholder="Ej: 13.0 o dejar en blanco")
+        perimetro_abd_str = st.text_input("Perímetro Abdominal (cm)", value="", placeholder="Ej: 72.0")
     with col_p8:
+        hb_str = st.text_input("Hemoglobina - Hb (g/dl)", value="", placeholder="Ej: 13.0")
+    with col_p9:
         condicion_paciente = st.selectbox("Condición del Paciente", ["C (Continuador)", "N (Nuevo)", "R (Reingresante)"])
 
     st.markdown("---")
@@ -71,20 +73,32 @@ with st.form("form_paciente", clear_on_submit=True):
     btn_guardar = st.form_submit_button("➕ Guardar e Ingresar Siguiente", type="primary")
 
     if btn_guardar:
-        dni_limpio = re.sub(r'\D', '', dni_paciente)
+        dni_pac_limpio = re.sub(r'\D', '', dni_paciente)
+        dni_prof_limpio = re.sub(r'\D', '', dni_profesional)
 
-        if not dni_limpio or len(dni_limpio) != 8:
-            st.error("⚠️ El DNI del Paciente debe contener exactamente 8 dígitos numéricos (no se permiten letras).")
+        if not dni_prof_limpio or len(dni_prof_limpio) != 8:
+            st.error("⚠️ El DNI del Profesional debe contener exactamente 8 dígitos numéricos.")
+        elif not dni_pac_limpio or len(dni_pac_limpio) != 8:
+            st.error("⚠️ El DNI del Paciente debe contener exactamente 8 dígitos numéricos.")
         elif not nombres_paciente:
             st.error("⚠️ Por favor, ingrese los Nombres del Paciente.")
         else:
             cond_letra = condicion_paciente[0]
             tipo_letra = tipo_diagnostico[0]
 
-            t_val = f"T: {talla_str}cm" if talla_str.strip() != "" else "T: "
-            p_val = f"P: {peso_str}kg" if peso_str.strip() != "" else "P: "
-            hb_val = f"Hb: {hb_str}" if hb_str.strip() != "" else "Hb: "
-            antropometria_text = f"{t_val}<br/>{p_val}<br/>{hb_val}"
+            # Mostrar siempre las etiquetas de antropometría y Hb (con valor o vacías)
+            val_talla = talla_str.strip() if talla_str.strip() != "" else ""
+            val_peso = peso_str.strip() if peso_str.strip() != "" else ""
+            val_pa = perimetro_abd_str.strip() if perimetro_abd_str.strip() != "" else ""
+            val_hb = hb_str.strip() if hb_str.strip() != "" else ""
+
+            lineas_antropometria = [
+                f"Talla: {val_talla}",
+                f"Peso: {val_peso}",
+                f"P. Abd: {val_pa}",
+                f"Hb: {val_hb}"
+            ]
+            antropometria_text = "<br/>".join(lineas_antropometria)
 
             codigos = ["Z003", "99384", "96150.01", "96150.02", "96150.03", "96150.05", "99402.09", "99401.15", "99403.01"]
             descripciones = [
@@ -103,7 +117,7 @@ with st.form("form_paciente", clear_on_submit=True):
 
             nuevo_paciente = {
                 "nro": len(st.session_state.lista_pacientes) + 1,
-                "dni": dni_limpio,
+                "dni": dni_pac_limpio,
                 "nombres": nombres_paciente,
                 "edad": edad_anos,
                 "fecha_nac": str(fecha_atencion),
@@ -140,7 +154,7 @@ if len(st.session_state.lista_pacientes) > 0:
             st.rerun()
 
     with col_btn2:
-        if st.button("📄 Generar PDF A4 Vertical Llenado Completo"):
+        if st.button("📄 Generar PDF A4 Vertical Final"):
             buffer = io.BytesIO()
             doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=10, leftMargin=10, topMargin=10, bottomMargin=10)
             styles = getSampleStyleSheet()
@@ -163,7 +177,6 @@ if len(st.session_state.lista_pacientes) > 0:
             chunks = [st.session_state.lista_pacientes[i:i + 5] for i in range(0, len(st.session_state.lista_pacientes), 5)]
 
             for page_idx, chunk in enumerate(chunks):
-                # Encabezado superior de la página
                 top_left_data = [
                     [Paragraph("<b>LOTE</b>", cell_style), Paragraph("", cell_style)],
                     [Paragraph("<b>PAGINA</b>", cell_style), Paragraph(f"{page_idx+1:02d}", cell_style)],
@@ -227,7 +240,7 @@ if len(st.session_state.lista_pacientes) > 0:
                         Paragraph(mes.upper(), cell_style),
                         Paragraph(centro_salud, cell_style),
                         Paragraph("OBSTETRICIA", cell_style),
-                        Paragraph(f"{dni_profesional} - {nombres_profesional}", cell_style)
+                        Paragraph(f"{re.sub(r'\D', '', dni_profesional)} - {nombres_profesional}", cell_style)
                     ]
                 ]
                 t_meta = Table(meta_data, colWidths=[30, 50, 150, 100, 148])
@@ -248,7 +261,7 @@ if len(st.session_state.lista_pacientes) > 0:
                     Paragraph("<b>Nombres y Apellidos del Paciente</b>", header_style),
                     Paragraph("<b>Edad</b>", header_style),
                     Paragraph("<b>F. Atención</b>", header_style),
-                    Paragraph("<b>Talla / Peso / Hb</b>", header_style),
+                    Paragraph("<b>Antropometría / Hb</b>", header_style),
                     Paragraph("<b>N/C/R</b>", header_style),
                     Paragraph("<b>CIE / CPT</b>", header_style),
                     Paragraph("<b>Actividades / Diagnósticos</b>", header_style),
@@ -316,7 +329,6 @@ if len(st.session_state.lista_pacientes) > 0:
                 t.setStyle(TableStyle(t_style_commands))
                 elements.append(t)
 
-                # Salto de página solo si hay más bloques de pacientes
                 if page_idx < len(chunks) - 1:
                     elements.append(PageBreak())
 
@@ -324,8 +336,8 @@ if len(st.session_state.lista_pacientes) > 0:
             buffer.seek(0)
 
             st.download_button(
-                label="📥 Descargar PDF A4 Vertical Llenado Completo",
+                label="📥 Descargar PDF A4 Vertical Final",
                 data=buffer,
-                file_name="Hoja_HIS_A4_Vertical_Completo.pdf",
+                file_name="Hoja_HIS_A4_Vertical_Final.pdf",
                 mime="application/pdf"
             )
