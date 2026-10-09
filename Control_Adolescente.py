@@ -66,20 +66,6 @@ LISTA_ESTABLECIMIENTOS = [
 # Inicializar estados
 if "dni_seleccionado" not in st.session_state:
     st.session_state.dni_seleccionado = ""
-if "widget_nom" not in st.session_state:
-    st.session_state.widget_nom = ""
-if "widget_est" not in st.session_state:
-    st.session_state.widget_est = "C.S. Belen"
-
-# Callback cuando cambia el DNI seleccionado
-def actualizar_datos_profesional():
-    dni = st.session_state.widget_dni
-    st.session_state.dni_seleccionado = dni
-    if dni in PROFESIONALES_DATA:
-        st.session_state.widget_nom = PROFESIONALES_DATA[dni]["nombre"]
-        st.session_state.widget_est = PROFESIONALES_DATA[dni]["establecimiento"]
-    else:
-        st.session_state.widget_nom = ""
 
 # --- 1. DATOS DEL ESTABLECIMIENTO Y PROFESIONAL ---
 st.markdown("#### 1. Datos del Establecimiento y Profesional")
@@ -93,26 +79,34 @@ col4, col5, col6 = st.columns(3)
 with col4:
     anio = st.text_input("Año", "2026")
 
+with col2:
+    centro_salud = st.selectbox("Centro de Salud / IPRESS", LISTA_ESTABLECIMIENTOS, key="widget_est")
+
+# Filtrar la lista de DNIs basándose estrictamente en el Centro de Salud seleccionado
+dnis_disponibles = [""] + [dni for dni, info in PROFESIONALES_DATA.items() if info["establecimiento"] == centro_salud]
+
+# Si el DNI seleccionado previamente no pertenece al centro de salud actual, se resetea
+if st.session_state.dni_seleccionado not in dnis_disponibles:
+    st.session_state.dni_seleccionado = ""
+
 with col5:
-    lista_dnis = [""] + list(PROFESIONALES_DATA.keys())
     try:
-        idx_dni = lista_dnis.index(st.session_state.dni_seleccionado)
+        idx_dni = dnis_disponibles.index(st.session_state.dni_seleccionado)
     except ValueError:
         idx_dni = 0
     
     dni_seleccionado = st.selectbox(
         "DNI del Profesional", 
-        lista_dnis, 
+        dnis_disponibles, 
         index=idx_dni, 
-        key="widget_dni", 
-        on_change=actualizar_datos_profesional
+        key="widget_dni"
     )
-
-with col2:
-    centro_salud = st.selectbox("Centro de Salud / IPRESS", LISTA_ESTABLECIMIENTOS, key="widget_est")
+    st.session_state.dni_seleccionado = dni_seleccionado
 
 with col6:
-    nombres_profesional = st.text_input("Nombres del Profesional", key="widget_nom", placeholder="Apellidos y Nombres")
+    # Obtener el nombre del profesional automáticamente según el DNI filtrado
+    nombre_sugerido = PROFESIONALES_DATA.get(dni_seleccionado, {}).get("nombre", "")
+    nombres_profesional = st.text_input("Nombres del Profesional", value=nombre_sugerido, placeholder="Apellidos y Nombres", disabled=True)
 
 st.markdown("---")
 
@@ -156,10 +150,10 @@ with st.form("form_paciente", clear_on_submit=True):
 
     if btn_guardar:
         dni_pac_limpio = re.sub(r'\D', '', dni_paciente)
-        dni_prof_limpio = re.sub(r'\D', '', st.session_state.dni_seleccionado)
+        dni_prof_limpio = re.sub(r'\D', '', dni_seleccionado)
 
         if not dni_prof_limpio or len(dni_prof_limpio) != 8:
-            st.error("⚠️ Por favor, seleccione o ingrese un DNI del Profesional válido de 8 dígitos.")
+            st.error("⚠️ Por favor, seleccione un DNI del Profesional válido de 8 dígitos.")
         elif not dni_pac_limpio or len(dni_pac_limpio) != 8:
             st.error("⚠️ El DNI del Paciente debe contener exactamente 8 dígitos numéricos.")
         elif not nombres_paciente:
@@ -325,7 +319,7 @@ if len(st.session_state.lista_pacientes) > 0:
                         Paragraph(mes.upper(), cell_style),
                         Paragraph(centro_salud, cell_style),
                         Paragraph("OBSTETRICIA", cell_style),
-                        Paragraph(f"{st.session_state.dni_seleccionado} - {st.session_state.widget_nom}", cell_style)
+                        Paragraph(f"{dni_seleccionado} - {nombre_sugerido}", cell_style)
                     ]
                 ]
                 t_meta = Table(meta_data, colWidths=[30, 50, 150, 100, 148])
@@ -426,7 +420,7 @@ if len(st.session_state.lista_pacientes) > 0:
             buffer.seek(0)
 
             st.download_button(
-                label="📄 Descargar PDF A4 Vertical (Día al lado izquierdo de DNI)",
+                label="📄 Descargar PDF A4 Vertical (Día al lado izquierdo del DNI)",
                 data=buffer,
                 file_name="Hoja_HIS_A4_Vertical_Dia_Izq.pdf",
                 mime="application/pdf"
