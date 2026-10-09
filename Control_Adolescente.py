@@ -16,6 +16,44 @@ st.markdown("**Registro para el Control del Adolescente - Formato HIS MINSA (A4 
 if "lista_pacientes" not in st.session_state:
     st.session_state.lista_pacientes = []
 
+# --- DICCIONARIO DE PROFESIONALES ---
+PROFESIONALES_DICT = {
+    "28293195": "ROCIO INES PARIONA GARAY",
+    "28294675": "MAYLHI GRETA PRADO SOTO",
+    "28286827": "PILAR GIULIANA SANCHEZ HUAMANI",
+    "41321349": "LILIANA ARONI LLANTOY",
+    "28271583": "ADA MAXIMILIANA ARGAMONTE VILCHEZ",
+    "44635959": "LIZBETH CARINA CONGA CHOQUECAHUA",
+    "28308403": "ROSA CECILIA CORDERO QUISPE",
+    "28288099": "YENY KARIN IPURRE PALOMINO",
+    "28214069": "GLADYS ELIZABETH SALAZAR PERALTA",
+    "41679300": "NANCY CUBA ESCALANTE",
+    "41543063": "BERTHA CHOQUECAHUA SANTIAGO",
+    "10815848": "ENVER GUERRERO VALDIVIA",
+    "28225596": "JUANA VILCHEZ ARAMBURU",
+    "28273980": "CARMEN ROSA SOTO CHUQUICAHUA",
+    "40625338": "MARILUZ CACÐAHUARAY HUILLCAHUARI",
+    "28310577": "MIRIAM GUTIERREZ VIVANCO",
+    "40769895": "YAQUELIN ROCIO CHAVEZ AYALA",
+    "43971512": "JESSICA BEIBET GOMEZ ALDAZABAL",
+    "45142977": "MARISOL JUSTINA HUAMANI CALDERON",
+    "73976363": "DAYSI RIVERA ÐAUPARI",
+    "28288694": "BRITT CUETO PEREZ",
+    "28249696": "ISABEL CRISTINA HUASHUAYO DE LA CRUZ",
+    "42847457": "CARMEN ROSA ARONI QUISPE",
+    "41458635": "YENY CASTRO RONDINEL",
+    "73051975": "JIMENA FIORELA MARTINEZ BEJAR",
+    "28294032": "NANCY CHANHUALLA TINEO",
+    "28202243": "EMMA CARMEN VALLEJO CORAS",
+    "31189161": "LISBETH TAIPE TARCO",
+    "28316375": "JANETT MARISOL PICHARDO LUJAN",
+    "41248331": "GUIULIANA IDALIA TORRES GOMEZ",
+    "42516121": "YENY ROCIO LOPEZ TODELANO",
+    "28269044": "JOSE ANTONIO RAMOS ATAURIMA",
+    "42407587": "JUDITH NELIDA QUISPE ARCE",
+    "48029513": "CELIA NOEMI YUCRA VELASQUEZ"
+}
+
 # --- 1. DATOS DEL ESTABLECIMIENTO Y PROFESIONAL ---
 st.markdown("#### 1. Datos del Establecimiento y Profesional")
 col1, col2, col3 = st.columns(3)
@@ -30,9 +68,12 @@ col4, col5, col6 = st.columns(3)
 with col4:
     anio = st.text_input("Año", "2026")
 with col5:
-    dni_profesional = st.text_input("DNI del Profesional (Exactamente 8 números)", max_chars=8, value="", placeholder="Ej: 28210469")
+    lista_dnis = [""] + list(PROFESIONALES_DICT.keys())
+    dni_seleccionado = st.selectbox("DNI del Profesional", lista_dnis)
 with col6:
-    nombres_profesional = st.text_input("Nombres del Profesional", value="", placeholder="Apellidos y Nombres")
+    # Autocompletar nombre si el DNI está en el diccionario, de lo contrario permitir edición libre
+    nombre_sugerido = PROFESIONALES_DICT.get(dni_seleccionado, "")
+    nombres_profesional = st.text_input("Nombres del Profesional", value=nombre_sugerido, placeholder="Apellidos y Nombres")
 
 st.markdown("---")
 
@@ -76,10 +117,10 @@ with st.form("form_paciente", clear_on_submit=True):
 
     if btn_guardar:
         dni_pac_limpio = re.sub(r'\D', '', dni_paciente)
-        dni_prof_limpio = re.sub(r'\D', '', dni_profesional)
+        dni_prof_limpio = re.sub(r'\D', '', dni_seleccionado)
 
         if not dni_prof_limpio or len(dni_prof_limpio) != 8:
-            st.error("⚠️ El DNI del Profesional debe contener exactamente 8 dígitos numéricos.")
+            st.error("⚠️ Por favor, seleccione o ingrese un DNI del Profesional válido de 8 dígitos.")
         elif not dni_pac_limpio or len(dni_pac_limpio) != 8:
             st.error("⚠️ El DNI del Paciente debe contener exactamente 8 dígitos numéricos.")
         elif not nombres_paciente:
@@ -245,7 +286,7 @@ if len(st.session_state.lista_pacientes) > 0:
                         Paragraph(mes.upper(), cell_style),
                         Paragraph(centro_salud, cell_style),
                         Paragraph("OBSTETRICIA", cell_style),
-                        Paragraph(f"{re.sub(r'\D', '', dni_profesional)} - {nombres_profesional}", cell_style)
+                        Paragraph(f"{dni_seleccionado} - {nombres_profesional}", cell_style)
                     ]
                 ]
                 t_meta = Table(meta_data, colWidths=[30, 50, 150, 100, 148])
@@ -260,7 +301,6 @@ if len(st.session_state.lista_pacientes) > 0:
                 elements.append(t_meta)
                 elements.append(Spacer(1, 4))
 
-                # Orden de cabeceras: N°, Día, DNI, Nombres, Edad, Sexo, Antropometría, Condición, CIE/CPT, Actividades, Lab, P/D/R
                 headers = [
                     Paragraph("<b>N°</b>", header_style),
                     Paragraph("<b>Día</b>", header_style),
@@ -305,7 +345,6 @@ if len(st.session_state.lista_pacientes) > 0:
                     t_sub_paciente = Table(sub_rows, colWidths=[40, 114, 18, 18])
                     t_sub_paciente.setStyle(TableStyle(sub_style))
 
-                    # Orden de datos de fila ajustado: N°, Día, DNI, Nombres, Edad, Sexo...
                     table_data.append([
                         Paragraph(str(p["nro"]), cell_center),
                         Paragraph(p["dia_atencion"], cell_center),
@@ -318,7 +357,6 @@ if len(st.session_state.lista_pacientes) > 0:
                         t_sub_paciente, "", "", ""
                     ])
 
-                # Anchos ajustados sumando 478 en total: N°(15), Día(20), DNI(42), Nombres(85), Edad(23), Sexo(18), Antropometría(60), N/C/R(21), CIE(40), Actividades(114), Lab(18), P/D/R(22)
                 t = Table(table_data, colWidths=[15, 20, 42, 85, 23, 18, 60, 21, 40, 114, 18, 22])
                 
                 t_style_commands = [
@@ -349,7 +387,7 @@ if len(st.session_state.lista_pacientes) > 0:
             buffer.seek(0)
 
             st.download_button(
-                label="📥 Descargar PDF A4 Vertical (Día al lado izquierdo de DNI)",
+                label="📄 Descargar PDF A4 Vertical (Día al lado izquierdo de DNI)",
                 data=buffer,
                 file_name="Hoja_HIS_A4_Vertical_Dia_Izq.pdf",
                 mime="application/pdf"
