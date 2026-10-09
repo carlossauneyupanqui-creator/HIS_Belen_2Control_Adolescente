@@ -60,7 +60,14 @@ col1, col2, col3 = st.columns(3)
 with col1:
     mes = st.selectbox("Mes", ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"], index=8)
 with col2:
-    centro_salud = st.text_input("Centro de Salud / IPRESS", "C.S. Belén")
+    centro_salud = st.selectbox("Centro de Salud / IPRESS", [
+        "C.S. Belen", 
+        "P.S. Barrios Altos", 
+        "P.S. Huascahura", 
+        "P.S. Morro de Arica", 
+        "P.S. Rancha", 
+        "P.S. Santa Ana"
+    ])
 with col3:
     turno_op = st.selectbox("Turno", ["Mañana (M)", "Tarde (T)", "Noche (N)"])
 
@@ -71,7 +78,6 @@ with col5:
     lista_dnis = [""] + list(PROFESIONALES_DICT.keys())
     dni_seleccionado = st.selectbox("DNI del Profesional", lista_dnis)
 with col6:
-    # Autocompletar nombre si el DNI está en el diccionario, de lo contrario permitir edición libre
     nombre_sugerido = PROFESIONALES_DICT.get(dni_seleccionado, "")
     nombres_profesional = st.text_input("Nombres del Profesional", value=nombre_sugerido, placeholder="Apellidos y Nombres")
 
