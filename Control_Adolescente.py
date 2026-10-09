@@ -18,7 +18,7 @@ if "lista_pacientes" not in st.session_state:
 
 # --- DICCIONARIO DE PROFESIONALES Y ESTABLECIMIENTOS ---
 PROFESIONALES_DATA = {
-    "28293195": {"nombre": "ROCIO INES PARIONA GARAY", "establecimiento": "C.S. Belen"},
+    "28293195": {"nombre": "ROCIO INS PARIONA GARAY", "establecimiento": "C.S. Belen"},
     "28294675": {"nombre": "MAYLHI GRETA PRADO SOTO", "establecimiento": "C.S. Belen"},
     "28286827": {"nombre": "PILAR GIULIANA SANCHEZ HUAMANI", "establecimiento": "C.S. Belen"},
     "41321349": {"nombre": "LILIANA ARONI LLANTOY", "establecimiento": "C.S. Belen"},
@@ -63,6 +63,24 @@ LISTA_ESTABLECIMIENTOS = [
     "P.S. Santa Ana"
 ]
 
+# Inicializar estados en session_state si no existen
+if "dni_seleccionado" not in st.session_state:
+    st.session_state.dni_seleccionado = ""
+if "centro_salud" not in st.session_state:
+    st.session_state.centro_salud = "C.S. Belen"
+if "nombres_profesional" not in st.session_state:
+    st.session_state.nombres_profesional = ""
+
+# Función callback cuando cambia el DNI
+def actualizar_datos_profesional():
+    dni = st.session_state.widget_dni
+    st.session_state.dni_seleccionado = dni
+    if dni in PROFESIONALES_DATA:
+        st.session_state.nombres_profesional = PROFESIONALES_DATA[dni]["nombre"]
+        st.session_state.centro_salud = PROFESIONALES_DATA[dni]["establecimiento"]
+    else:
+        st.session_state.nombres_profesional = ""
+
 # --- 1. DATOS DEL ESTABLECIMIENTO Y PROFESIONAL ---
 st.markdown("#### 1. Datos del Establecimiento y Profesional")
 col1, col2, col3 = st.columns(3)
@@ -74,24 +92,35 @@ with col3:
 col4, col5, col6 = st.columns(3)
 with col4:
     anio = st.text_input("Año", "2026")
+
 with col5:
     lista_dnis = [""] + list(PROFESIONALES_DATA.keys())
-    dni_seleccionado = st.selectbox("DNI del Profesional", lista_dnis)
-
-# Obtener datos automáticos según el DNI seleccionado
-info_profesional = PROFESIONALES_DATA.get(dni_seleccionado, {"nombre": "", "establecimiento": "C.S. Belen"})
-nombre_sugerido = info_profesional["nombre"]
-establecimiento_sugerido = info_profesional["establecimiento"]
+    # Índice actual del DNI seleccionado
+    try:
+        idx_dni = lista_dnis.index(st.session_state.dni_seleccionado)
+    except ValueError:
+        idx_dni = 0
+    
+    dni_seleccionado = st.selectbox(
+        "DNI del Profesional", 
+        lista_dnis, 
+        index=idx_dni, 
+        key="widget_dni", 
+        on_change=actualizar_datos_profesional
+    )
 
 with col2:
     try:
-        idx_est = LISTA_ESTABLECIMIENTOS.index(establecimiento_sugerido)
+        idx_est = LISTA_ESTABLECIMIENTOS.index(st.session_state.centro_salud)
     except ValueError:
         idx_est = 0
-    centro_salud = st.selectbox("Centro de Salud / IPRESS", LISTA_ESTABLECIMIENTOS, index=idx_est)
+    centro_salud = st.selectbox("Centro de Salud / IPRESS", LISTA_ESTABLECIMIENTOS, index=idx_est, key="widget_est")
+    # Sincronizar por si el usuario lo cambia manualmente
+    st.session_state.centro_salud = centro_salud
 
 with col6:
-    nombres_profesional = st.text_input("Nombres del Profesional", value=nombre_sugerido, placeholder="Apellidos y Nombres")
+    nombres_profesional = st.text_input("Nombres del Profesional", value=st.session_state.nombres_profesional, placeholder="Apellidos y Nombres", key="widget_nom")
+    st.session_state.nombres_profesional = nombres_profesional
 
 st.markdown("---")
 
@@ -135,7 +164,7 @@ with st.form("form_paciente", clear_on_submit=True):
 
     if btn_guardar:
         dni_pac_limpio = re.sub(r'\D', '', dni_paciente)
-        dni_prof_limpio = re.sub(r'\D', '', dni_seleccionado)
+        dni_prof_limpio = re.sub(r'\D', '', st.session_state.dni_seleccionado)
 
         if not dni_prof_limpio or len(dni_prof_limpio) != 8:
             st.error("⚠️ Por favor, seleccione o ingrese un DNI del Profesional válido de 8 dígitos.")
@@ -304,7 +333,7 @@ if len(st.session_state.lista_pacientes) > 0:
                         Paragraph(mes.upper(), cell_style),
                         Paragraph(centro_salud, cell_style),
                         Paragraph("OBSTETRICIA", cell_style),
-                        Paragraph(f"{dni_seleccionado} - {nombres_profesional}", cell_style)
+                        Paragraph(f"{st.session_state.dni_seleccionado} - {st.session_state.nombres_profesional}", cell_style)
                     ]
                 ]
                 t_meta = Table(meta_data, colWidths=[30, 50, 150, 100, 148])
