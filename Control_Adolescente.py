@@ -112,7 +112,7 @@ tipo_control = st.radio(
     "Elija el número de control:",
     ["1er Control", "2do Control", "3er Control"],
     horizontal=True,
-    index=2
+    index=1
 )
 
 st.markdown("---")
@@ -202,25 +202,30 @@ with st.form("form_paciente", clear_on_submit=True):
 
             elif tipo_control == "2do Control":
                 codigos = [
-                    "96150.01", "96150.02", "96150.03", "96150.05",
-                    "99384", "99401.15", "99402.09", "99403.01", "Z003", "", ""
+                    "Z003", "99384", "96150.01", "96150.02", "96150.03", "96150.05",
+                    "99402.09", "99401.15", "99403.01",
+                    "", ""
                 ]
                 descripciones = [
+                    "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
+                    "ATENCIÓN INICIAL Y EXHAUSTIVA DE MEDICINA PREVENTIVA",
                     "TAMIZAJE DE SALUD MENTAL EN VIOLENCIA",
                     "TAMIZAJE DE SALUD MENTAL EN ALCOHOL Y DROGAS",
                     "TAMIZAJE DE SALUD MENTAL EN TRASTORNOS DEPRESIVOS",
                     "TAMIZAJE DE SALUD MENTAL EN HABILIDADES SOCIALES",
-                    "ATENCIÓN INICIAL Y EXHAUSTIVA DE MEDICINA PREVENTIVA",
-                    "CONSEJERÍA EN HABILIDADES SOCIALES",
                     "CONSEJERÍA DE PREVENCIÓN DE RIESGOS EN SALUD MENTAL",
+                    "CONSEJERÍA EN HABILIDADES SOCIALES",
                     "CONSEJERÍA NUTRICIONAL: ALIMENTACIÓN SALUDABLE",
-                    "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
                     "&nbsp;<br/>&nbsp;", "&nbsp;<br/>&nbsp;"
                 ]
-                labs = ["", "", "", "", "2", "", "1", "2", "", "", ""]
+                labs = [
+                    "", "2", "", "", "", "",
+                    "1", "", "2",
+                    "", ""
+                ]
                 prds = [tipo_letra] * 9 + ["", ""]
 
-            else:  # 3er Control (7 filas de contenido + 2 espacios en blanco con la misma altura de Z003)
+            else:  # 3er Control
                 codigos = [
                     "Z003", "99384", "99801",
                     "99384.02", "99402.03", "99402.05", "99402.08",
