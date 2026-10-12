@@ -8,10 +8,10 @@ import datetime
 import pandas as pd
 import re
 
-st.set_page_config(page_title="Servicio de Obstetricia - 3er Control del Adolescente", layout="wide")
+st.set_page_config(page_title="Servicio de Obstetricia - Control del Adolescente", layout="wide")
 
 st.markdown("### 🏥 Servicio de Obstetricia")
-st.markdown("**Registro para el 3er Control del Adolescente - Formato HIS MINSA (A4 Vertical)**")
+st.markdown("**Registro para el Control del Adolescente - Formato HIS MINSA (A4 Vertical)**")
 
 if "lista_pacientes" not in st.session_state:
     st.session_state.lista_pacientes = []
@@ -106,8 +106,19 @@ with col6:
 
 st.markdown("---")
 
+# --- SELECTOR DEL NUMERO DE CONTROL ---
+st.markdown("#### 📌 Seleccione el Control a Registrar")
+tipo_control = st.radio(
+    "Elija el número de control:",
+    ["1er Control", "2do Control", "3er Control"],
+    horizontal=True,
+    index=2  # Por defecto seleccionado en 3er Control
+)
+
+st.markdown("---")
+
 # --- 2. FORMULARIO DE DATOS DEL PACIENTE ---
-st.markdown(f"#### 2. Datos del Paciente, Antropometría y Condición - **3er Control** (Paciente N° {len(st.session_state.lista_pacientes) + 1})")
+st.markdown(f"#### 2. Datos del Paciente, Antropometría y Condición - **{tipo_control}** (Paciente N° {len(st.session_state.lista_pacientes) + 1})")
 
 with st.form("form_paciente", clear_on_submit=True):
     col_p1, col_p2, col_p3 = st.columns(3)
@@ -137,8 +148,8 @@ with st.form("form_paciente", clear_on_submit=True):
         condicion_paciente = st.selectbox("Condición del Paciente", ["C (Continuador)", "N (Nuevo)", "R (Reingresante)"])
 
     st.markdown("---")
-    st.markdown("#### 3. Diagnósticos y Procedimientos Oficiales (3er Control)")
-    st.info("Se registrarán automáticamente los códigos normados para el 3er Control del Adolescente.")
+    st.markdown(f"#### 3. Diagnósticos y Procedimientos Oficiales ({tipo_control})")
+    st.info(f"Se registrarán automáticamente los códigos normados para el **{tipo_control}**.")
 
     tipo_diagnostico = st.selectbox("Tipo de Diagnóstico / Actividad (HIS)", ["D (Definitivo)", "P (Preventivo)", "R (Repetido)"])
 
@@ -172,50 +183,54 @@ with st.form("form_paciente", clear_on_submit=True):
             ]
             antropometria_text = "<br/>".join(lineas_antropometria)
 
-            # CÓDIGOS Y LABS ESPECÍFICOS PARA EL 3ER CONTROL DEL ADOLESCENTE
-            codigos = [
-                "Z003",
-                "99384",
-                "99801",
-                "99801",
-                "99801",
-                "99384.02",
-                "99402.03",
-                "99402.05",
-                "99402.08",
-                "",
-                ""
-            ]
-            
-            descripciones = [
-                "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
-                "ATENCIÓN INTEGRAL DEL ADOLESCENTE",
-                "EVALUACIÓN DE LA PRESIÓN ARTERIAL",
-                "EVALUACIÓN DEL DESARROLLO SEXUAL (TANNER)",
-                "EVALUACIÓN DE LA AGUDEZA VISUAL",
-                "EVALUACIÓN DE LA SALUD OCUPACIONAL / ESTUDIOS",
-                "CONSEJERÍA EN SALUD SEXUAL Y REPRODUCTIVA",
-                "CONSEJERÍA DE PREVENCIÓN DE ENFERMEDADES NO TRANSMISIBLES",
-                "CONSEJERÍA EN SALUD MENTAL Y ESTILOS DE VIDA SALUDABLES",
-                "<br/>",
-                "<br/>"
-            ]
-            
-            labs = [
-                "",
-                "3",
-                "TA",
-                "2",
-                "1",
-                "",
-                "2",
-                "",
-                "2",
-                "",
-                ""
-            ]
-            
-            prds = [tipo_letra] * 9 + ["", ""]
+            # LÓGICA DE CÓDIGOS SEGÚN EL CONTROL SELECCIONADO
+            if tipo_control == "1er Control":
+                codigos = ["Z003", "99384", "96150.01", "96150.02", "96150.03", "96150.05", "99402.09", "99401.15", "99403.01", "", ""]
+                descripciones = [
+                    "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
+                    "ATENCIÓN INICIAL Y EXHAUSTIVA DE MEDICINA PREVENTIVA",
+                    "TAMIZAJE DE SALUD MENTAL EN VIOLENCIA",
+                    "TAMIZAJE DE SALUD MENTAL EN ALCOHOL Y DROGAS",
+                    "TAMIZAJE DE SALUD MENTAL EN TRASTORNOS DEPRESIVOS",
+                    "TAMIZAJE DE SALUD MENTAL EN HABILIDADES SOCIALES",
+                    "CONSEJERÍA DE PREVENCIÓN DE RIESGOS EN SALUD MENTAL",
+                    "CONSEJERÍA EN HABILIDADES SOCIALES",
+                    "CONSEJERÍA NUTRICIONAL: ALIMENTACIÓN SALUDABLE",
+                    "<br/>", "<br/>"
+                ]
+                labs = ["", "1", "", "", "", "", "1", "", "1", "", ""]
+
+            elif tipo_control == "2do Control":
+                codigos = ["Z003", "99384", "99402.09", "99403.01", "", "", "", "", "", "", ""]
+                descripciones = [
+                    "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
+                    "ATENCIÓN INTEGRAL DEL ADOLESCENTE",
+                    "CONSEJERÍA DE PREVENCIÓN DE RIESGOS EN SALUD MENTAL",
+                    "CONSEJERÍA NUTRICIONAL: ALIMENTACIÓN SALUDABLE",
+                    "<br/>", "<br/>", "<br/>", "<br/>", "<br/>", "<br/>", "<br/>"
+                ]
+                labs = ["", "2", "2", "2", "", "", "", "", "", "", ""]
+
+            else:  # 3er Control
+                codigos = [
+                    "Z003", "99384", "99801", "99801", "99801",
+                    "99384.02", "99402.03", "99402.05", "99402.08", "", ""
+                ]
+                descripciones = [
+                    "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
+                    "ATENCIÓN INTEGRAL DEL ADOLESCENTE",
+                    "EVALUACIÓN DE LA PRESIÓN ARTERIAL",
+                    "EVALUACIÓN DEL DESARROLLO SEXUAL (TANNER)",
+                    "EVALUACIÓN DE LA AGUDEZA VISUAL",
+                    "EVALUACIÓN DE LA SALUD OCUPACIONAL / ESTUDIOS",
+                    "CONSEJERÍA EN SALUD SEXUAL Y REPRODUCTIVA",
+                    "CONSEJERÍA DE PREVENCIÓN DE ENFERMEDADES NO TRANSMISIBLES",
+                    "CONSEJERÍA EN SALUD MENTAL Y ESTILOS DE VIDA SALUDABLES",
+                    "<br/>", "<br/>"
+                ]
+                labs = ["", "3", "TA", "2", "1", "", "2", "", "2", "", ""]
+
+            prds = [tipo_letra] * (len(codigos) - 2) + ["", ""]
 
             nuevo_paciente = {
                 "nro": len(st.session_state.lista_pacientes) + 1,
@@ -229,10 +244,11 @@ with st.form("form_paciente", clear_on_submit=True):
                 "codigos": codigos,
                 "descripciones": descripciones,
                 "labs": labs,
-                "prds": prds
+                "prds": prds,
+                "tipo_control": tipo_control
             }
             st.session_state.lista_pacientes.append(nuevo_paciente)
-            st.success(f"✅ ¡3er Control del Paciente guardado con éxito! (Total registrados: {len(st.session_state.lista_pacientes)})")
+            st.success(f"✅ ¡{tipo_control} guardado con éxito! (Total registrados: {len(st.session_state.lista_pacientes)})")
 
 # --- 4. LISTA DE PACIENTES REGISTRADOS Y GENERACIÓN DE PDF ---
 if len(st.session_state.lista_pacientes) > 0:
@@ -240,8 +256,15 @@ if len(st.session_state.lista_pacientes) > 0:
     st.markdown(f"### 📋 Pacientes Registrados ({len(st.session_state.lista_pacientes)})")
     
     df_preview = pd.DataFrame([{
-        "nro": p["nro"], "dia": p["dia_atencion"], "dni": p["dni"], "nombres": p["nombres"], "edad": p["edad"], "sexo": p["sexo"],
-        "antropometria": p["antropometria"].replace("<br/>", " | "), "condicion": p["condicion"],
+        "nro": p["nro"],
+        "control": p["tipo_control"],
+        "dia": p["dia_atencion"],
+        "dni": p["dni"],
+        "nombres": p["nombres"],
+        "edad": p["edad"],
+        "sexo": p["sexo"],
+        "antropometria": p["antropometria"].replace("<br/>", " | "),
+        "condicion": p["condicion"],
         "codigos": "<br/>".join([c if c != "" else "(En blanco)" for c in p["codigos"]]),
         "diagnosticos": "<br/>".join([d if d != "<br/>" else "(En blanco grande)" for d in p["descripciones"]]),
         "labs": "<br/>".join([l if l != "" else "-" for l in p["labs"]]),
@@ -257,7 +280,7 @@ if len(st.session_state.lista_pacientes) > 0:
             st.rerun()
 
     with col_btn2:
-        if st.button("📄 Generar PDF A4 Vertical (3er Control)"):
+        if st.button("📄 Generar PDF A4 Vertical"):
             buffer = io.BytesIO()
             doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=10, leftMargin=10, topMargin=10, bottomMargin=10)
             styles = getSampleStyleSheet()
@@ -444,8 +467,8 @@ if len(st.session_state.lista_pacientes) > 0:
             buffer.seek(0)
 
             st.download_button(
-                label="📄 Descargar PDF A4 Vertical (3er Control)",
+                label="📄 Descargar PDF A4 Vertical",
                 data=buffer,
-                file_name="3er_Control_Adolescente_HIS.pdf",
+                file_name="Control_Adolescente_HIS.pdf",
                 mime="application/pdf"
             )
