@@ -215,7 +215,7 @@ with st.form("form_paciente", clear_on_submit=True):
                     "CONSEJERÍA DE PREVENCIÓN DE RIESGOS EN SALUD MENTAL",
                     "CONSEJERÍA NUTRICIONAL: ALIMENTACIÓN SALUDABLE",
                     "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
-                    "<br/>", "<br/>"
+                    "<br/>", "<br/>","<br/>"
                 ]
                 labs = ["", "", "", "", "2", "", "1", "2", "", "", ""]
                 prds = [tipo_letra] * 9 + ["", ""]
@@ -234,7 +234,7 @@ with st.form("form_paciente", clear_on_submit=True):
                     "CONSEJERÍA EN SALUD SEXUAL Y REPRODUCTIVA",
                     "CONSEJERÍA DE PREVENCIÓN DE ENFERMEDADES NO TRANSMISIBLES",
                     "CONSEJERÍA EN SALUD MENTAL Y ESTILOS DE VIDA SALUDABLES",
-                    "<br/>", "<br/>"
+                    "<br/>", "<br/>","<br/>"
                 ]
                 labs = [
                     "", "3", "TA/2/1",
