@@ -195,7 +195,7 @@ with st.form("form_paciente", clear_on_submit=True):
                     "CONSEJERÍA DE PREVENCIÓN DE RIESGOS EN SALUD MENTAL",
                     "CONSEJERÍA EN HABILIDADES SOCIALES",
                     "CONSEJERÍA NUTRICIONAL: ALIMENTACIÓN SALUDABLE",
-                    "<br/>", "<br/>"
+                    "&nbsp;<br/>&nbsp;", "&nbsp;<br/>&nbsp;"
                 ]
                 labs = ["", "1", "", "", "", "", "1", "", "1", "", ""]
                 prds = [tipo_letra] * 9 + ["", ""]
@@ -215,12 +215,12 @@ with st.form("form_paciente", clear_on_submit=True):
                     "CONSEJERÍA DE PREVENCIÓN DE RIESGOS EN SALUD MENTAL",
                     "CONSEJERÍA NUTRICIONAL: ALIMENTACIÓN SALUDABLE",
                     "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
-                    "<br/>", "<br/>","<br/>"
+                    "&nbsp;<br/>&nbsp;", "&nbsp;<br/>&nbsp;"
                 ]
                 labs = ["", "", "", "", "2", "", "1", "2", "", "", ""]
                 prds = [tipo_letra] * 9 + ["", ""]
 
-            else:  # 3er Control (Exactamente 7 líneas con contenido + 2 líneas en blanco)
+            else:  # 3er Control (7 filas de contenido + 2 espacios en blanco con la misma altura de Z003)
                 codigos = [
                     "Z003", "99384", "99801",
                     "99384.02", "99402.03", "99402.05", "99402.08",
@@ -234,7 +234,7 @@ with st.form("form_paciente", clear_on_submit=True):
                     "CONSEJERÍA EN SALUD SEXUAL Y REPRODUCTIVA",
                     "CONSEJERÍA DE PREVENCIÓN DE ENFERMEDADES NO TRANSMISIBLES",
                     "CONSEJERÍA EN SALUD MENTAL Y ESTILOS DE VIDA SALUDABLES",
-                    "<br/>", "<br/>","<br/>"
+                    "&nbsp;<br/>&nbsp;", "&nbsp;<br/>&nbsp;"
                 ]
                 labs = [
                     "", "3", "TA/2/1",
@@ -277,7 +277,7 @@ if len(st.session_state.lista_pacientes) > 0:
         "antropometria": p["antropometria"].replace("<br/>", " | "),
         "condicion": p["condicion"],
         "codigos": "<br/>".join([c if c != "" else "(En blanco)" for c in p["codigos"]]),
-        "diagnosticos": "<br/>".join([d if d != "<br/>" else "(En blanco grande)" for d in p["descripciones"]]),
+        "diagnosticos": "<br/>".join([d if d != "&nbsp;<br/>&nbsp;" else "(En blanco)" for d in p["descripciones"]]),
         "labs": "<br/>".join([l if l != "" else "-" for l in p["labs"]]),
         "prd": "<br/>".join([pr if pr != "" else "-" for pr in p["prds"]])
     } for p in st.session_state.lista_pacientes])
@@ -419,7 +419,6 @@ if len(st.session_state.lista_pacientes) > 0:
                             Paragraph(prd, cell_center)
                         ])
 
-                    # PADDING Y ESTILOS UNIFORMES PARA TODAS LAS FILAS DE LA SUBTABLA
                     sub_style = [
                         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
                         ('TOPPADDING', (0,0), (-1,-1), 2.5),
