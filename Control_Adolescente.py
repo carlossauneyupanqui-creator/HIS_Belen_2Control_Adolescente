@@ -8,10 +8,10 @@ import datetime
 import pandas as pd
 import re
 
-st.set_page_config(page_title="Servicio de Obstetricia - Control del Adolescente (Vertical)", layout="wide")
+st.set_page_config(page_title="Servicio de Obstetricia - 3er Control del Adolescente", layout="wide")
 
 st.markdown("### 🏥 Servicio de Obstetricia")
-st.markdown("**Registro para el Control del Adolescente - Formato HIS MINSA (A4 Vertical - Día al lado izquierdo del DNI)**")
+st.markdown("**Registro para el 3er Control del Adolescente - Formato HIS MINSA (A4 Vertical)**")
 
 if "lista_pacientes" not in st.session_state:
     st.session_state.lista_pacientes = []
@@ -63,7 +63,6 @@ LISTA_ESTABLECIMIENTOS = [
     "P.S. Santa Ana"
 ]
 
-# Inicializar estados
 if "dni_seleccionado" not in st.session_state:
     st.session_state.dni_seleccionado = ""
 
@@ -82,10 +81,8 @@ with col4:
 with col2:
     centro_salud = st.selectbox("Centro de Salud / IPRESS", LISTA_ESTABLECIMIENTOS, key="widget_est")
 
-# Filtrar la lista de DNIs basándose estrictamente en el Centro de Salud seleccionado
 dnis_disponibles = [""] + [dni for dni, info in PROFESIONALES_DATA.items() if info["establecimiento"] == centro_salud]
 
-# Si el DNI seleccionado previamente no pertenece al centro de salud actual, se resetea
 if st.session_state.dni_seleccionado not in dnis_disponibles:
     st.session_state.dni_seleccionado = ""
 
@@ -104,14 +101,13 @@ with col5:
     st.session_state.dni_seleccionado = dni_seleccionado
 
 with col6:
-    # Obtener el nombre del profesional automáticamente según el DNI filtrado
     nombre_sugerido = PROFESIONALES_DATA.get(dni_seleccionado, {}).get("nombre", "")
     nombres_profesional = st.text_input("Nombres del Profesional", value=nombre_sugerido, placeholder="Apellidos y Nombres", disabled=True)
 
 st.markdown("---")
 
 # --- 2. FORMULARIO DE DATOS DEL PACIENTE ---
-st.markdown(f"#### 2. Datos del Paciente, Antropometría y Condición (Paciente N° {len(st.session_state.lista_pacientes) + 1})")
+st.markdown(f"#### 2. Datos del Paciente, Antropometría y Condición - **3er Control** (Paciente N° {len(st.session_state.lista_pacientes) + 1})")
 
 with st.form("form_paciente", clear_on_submit=True):
     col_p1, col_p2, col_p3 = st.columns(3)
@@ -141,8 +137,8 @@ with st.form("form_paciente", clear_on_submit=True):
         condicion_paciente = st.selectbox("Condición del Paciente", ["C (Continuador)", "N (Nuevo)", "R (Reingresante)"])
 
     st.markdown("---")
-    st.markdown("#### 3. Diagnósticos y Procedimientos Oficiales")
-    st.info("Se incluirán automáticamente las actividades normadas más 2 líneas adicionales con mayor altura.")
+    st.markdown("#### 3. Diagnósticos y Procedimientos Oficiales (3er Control)")
+    st.info("Se registrarán automáticamente los códigos normados para el 3er Control del Adolescente.")
 
     tipo_diagnostico = st.selectbox("Tipo de Diagnóstico / Actividad (HIS)", ["D (Definitivo)", "P (Preventivo)", "R (Repetido)"])
 
@@ -176,21 +172,49 @@ with st.form("form_paciente", clear_on_submit=True):
             ]
             antropometria_text = "<br/>".join(lineas_antropometria)
 
-            codigos = ["Z003", "99384", "96150.01", "96150.02", "96150.03", "96150.05", "99402.09", "99401.15", "99403.01", "", ""]
+            # CÓDIGOS Y LABS ESPECÍFICOS PARA EL 3ER CONTROL DEL ADOLESCENTE
+            codigos = [
+                "Z003",
+                "99384",
+                "99801",
+                "99801",
+                "99801",
+                "99384.02",
+                "99402.03",
+                "99402.05",
+                "99402.08",
+                "",
+                ""
+            ]
+            
             descripciones = [
                 "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
-                "ATENCIÓN INICIAL Y EXHAUSTIVA DE MEDICINA PREVENTIVA",
-                "TAMIZAJE DE SALUD MENTAL EN VIOLENCIA",
-                "TAMIZAJE DE SALUD MENTAL EN ALCOHOL Y DROGAS",
-                "TAMIZAJE DE SALUD MENTAL EN TRASTORNOS DEPRESIVOS",
-                "TAMIZAJE DE SALUD MENTAL EN HABILIDADES SOCIALES",
-                "CONSEJERÍA DE PREVENCIÓN DE RIESGOS EN SALUD MENTAL",
-                "CONSEJERÍA EN HABILIDADES SOCIALES",
-                "CONSEJERÍA NUTRICIONAL: ALIMENTACIÓN SALUDABLE",
+                "ATENCIÓN INTEGRAL DEL ADOLESCENTE",
+                "EVALUACIÓN DE LA PRESIÓN ARTERIAL",
+                "EVALUACIÓN DEL DESARROLLO SEXUAL (TANNER)",
+                "EVALUACIÓN DE LA AGUDEZA VISUAL",
+                "EVALUACIÓN DE LA SALUD OCUPACIONAL / ESTUDIOS",
+                "CONSEJERÍA EN SALUD SEXUAL Y REPRODUCTIVA",
+                "CONSEJERÍA DE PREVENCIÓN DE ENFERMEDADES NO TRANSMISIBLES",
+                "CONSEJERÍA EN SALUD MENTAL Y ESTILOS DE VIDA SALUDABLES",
                 "<br/>",
                 "<br/>"
             ]
-            labs = ["", "2", "", "", "", "", "1", "", "2", "", ""]
+            
+            labs = [
+                "",
+                "3",
+                "TA",
+                "2",
+                "1",
+                "",
+                "2",
+                "",
+                "2",
+                "",
+                ""
+            ]
+            
             prds = [tipo_letra] * 9 + ["", ""]
 
             nuevo_paciente = {
@@ -208,7 +232,7 @@ with st.form("form_paciente", clear_on_submit=True):
                 "prds": prds
             }
             st.session_state.lista_pacientes.append(nuevo_paciente)
-            st.success(f"✅ ¡Paciente guardado con éxito! (Total registrados: {len(st.session_state.lista_pacientes)})")
+            st.success(f"✅ ¡3er Control del Paciente guardado con éxito! (Total registrados: {len(st.session_state.lista_pacientes)})")
 
 # --- 4. LISTA DE PACIENTES REGISTRADOS Y GENERACIÓN DE PDF ---
 if len(st.session_state.lista_pacientes) > 0:
@@ -233,7 +257,7 @@ if len(st.session_state.lista_pacientes) > 0:
             st.rerun()
 
     with col_btn2:
-        if st.button("📄 Generar PDF A4 Vertical (Día al lado izquierdo del DNI)"):
+        if st.button("📄 Generar PDF A4 Vertical (3er Control)"):
             buffer = io.BytesIO()
             doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=10, leftMargin=10, topMargin=10, bottomMargin=10)
             styles = getSampleStyleSheet()
@@ -292,136 +316,4 @@ if len(st.session_state.lista_pacientes) > 0:
                 t_right = Table(top_right_data, colWidths=[120], rowHeights=[12, 22, 12])
                 t_right.setStyle(TableStyle([
                     ('GRID', (0,0), (-1,-1), 0.4, colors.black),
-                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-                    ('BACKGROUND', (0,0), (0,0), colors.HexColor('#f0f0f0')),
-                ]))
-
-                t_header_main = Table([[t_left, t_mid, t_right]], colWidths=[79, 279, 120])
-                t_header_main.setStyle(TableStyle([
-                    ('VALIGN', (0,0), (-1,-1), 'TOP'),
-                    ('LEFTPADDING', (0,0), (-1,-1), 0),
-                    ('RIGHTPADDING', (0,0), (-1,-1), 0),
-                ]))
-                elements.append(t_header_main)
-                elements.append(Spacer(1, 4))
-
-                meta_data = [
-                    [
-                        Paragraph("<b>2. AÑO</b>", header_style),
-                        Paragraph("<b>3. MES</b>", header_style),
-                        Paragraph("<b>4. NOMBRE DE ESTABLECIMIENTO DE SALUD (IPRESS)</b>", header_style),
-                        Paragraph("<b>5. UNIDAD PRODUCTORA DE SERVICIOS (UPSS)</b>", header_style),
-                        Paragraph("<b>6. NOMBRE DEL RESPONSABLE DE LA ATENCIÓN</b>", header_style)
-                    ],
-                    [
-                        Paragraph(anio, cell_style),
-                        Paragraph(mes.upper(), cell_style),
-                        Paragraph(centro_salud, cell_style),
-                        Paragraph("OBSTETRICIA", cell_style),
-                        Paragraph(f"{dni_seleccionado} - {nombre_sugerido}", cell_style)
-                    ]
-                ]
-                t_meta = Table(meta_data, colWidths=[30, 50, 150, 100, 148])
-                t_meta.setStyle(TableStyle([
-                    ('GRID', (0,0), (-1,-1), 0.4, colors.black),
-                    ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#e2e8f0')),
-                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-                    ('TOPPADDING', (0,0), (-1,-1), 2.5),
-                    ('BOTTOMPADDING', (0,0), (-1,-1), 2.5),
-                ]))
-                elements.append(t_meta)
-                elements.append(Spacer(1, 4))
-
-                headers = [
-                    Paragraph("<b>N°</b>", header_style),
-                    Paragraph("<b>Día</b>", header_style),
-                    Paragraph("<b>DNI</b>", header_style),
-                    Paragraph("<b>Nombres y Apellidos del Paciente</b>", header_style),
-                    Paragraph("<b>Edad</b>", header_style),
-                    Paragraph("<b>Sexo</b>", header_style),
-                    Paragraph("<b>Antropometría / Hb</b>", header_style),
-                    Paragraph("<b>N/C/R</b>", header_style),
-                    Paragraph("<b>CIE / CPT</b>", header_style),
-                    Paragraph("<b>Actividades / Diagnósticos</b>", header_style),
-                    Paragraph("<b>Lab</b>", header_style),
-                    Paragraph("<b>P/D/R</b>", header_style)
-                ]
-
-                table_data = [headers]
-                
-                for p in chunk:
-                    sub_rows = []
-                    for idx, (cod, desc, lab, prd) in enumerate(zip(p["codigos"], p["descripciones"], p["labs"], p["prds"])):
-                        sub_rows.append([
-                            Paragraph(cod, cell_center),
-                            Paragraph(desc, cell_style),
-                            Paragraph(lab, cell_center),
-                            Paragraph(prd, cell_center)
-                        ])
-
-                    sub_style = [
-                        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-                        ('TOPPADDING', (0,0), (-1,-1), 1),
-                        ('BOTTOMPADDING', (0,0), (-1,-1), 1),
-                        ('LEFTPADDING', (0,0), (-1,-1), 1),
-                        ('RIGHTPADDING', (0,0), (-1,-1), 1),
-                    ]
-                    
-                    sub_style.append(('TOPPADDING', (0, 9), (-1, 10), 6.5))
-                    sub_style.append(('BOTTOMPADDING', (0, 9), (-1, 10), 6.5))
-
-                    for i in range(len(sub_rows) - 1):
-                        sub_style.append(('LINEBELOW', (0, i), (-1, i), 0.25, colors.HexColor('#cbd5e0')))
-
-                    t_sub_paciente = Table(sub_rows, colWidths=[40, 114, 18, 18])
-                    t_sub_paciente.setStyle(TableStyle(sub_style))
-
-                    table_data.append([
-                        Paragraph(str(p["nro"]), cell_center),
-                        Paragraph(p["dia_atencion"], cell_center),
-                        Paragraph(p["dni"], cell_center),
-                        Paragraph(p["nombres"], cell_style),
-                        Paragraph(str(p["edad"]), cell_edad),
-                        Paragraph(p["sexo"], cell_center),
-                        Paragraph(p["antropometria"], cell_center),
-                        Paragraph(p["condicion"], cell_center),
-                        t_sub_paciente, "", "", ""
-                    ])
-
-                t = Table(table_data, colWidths=[15, 20, 42, 85, 23, 18, 60, 21, 40, 114, 18, 22])
-                
-                t_style_commands = [
-                    ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#2b6cb0')),
-                    ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-                    ('GRID', (0,0), (-1,-1), 0.4, colors.black),
-                    ('TOPPADDING', (0,0), (-1,-1), 1),
-                    ('BOTTOMPADDING', (0,0), (-1,-1), 1),
-                    ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#f7fafc')])
-                ]
-                
-                for row_idx in range(1, len(chunk) + 1):
-                    t_style_commands.append(('SPAN', (8, row_idx), (11, row_idx)))
-                    t_style_commands.append(('LEFTPADDING', (8, row_idx), (11, row_idx), 0))
-                    t_style_commands.append(('RIGHTPADDING', (8, row_idx), (11, row_idx), 0))
-                    t_style_commands.append(('TOPPADDING', (8, row_idx), (11, row_idx), 0))
-                    t_style_commands.append(('BOTTOMPADDING', (8, row_idx), (11, row_idx), 0))
-
-                t.setStyle(TableStyle(t_style_commands))
-                elements.append(t)
-
-                if page_idx < len(chunks) - 1:
-                    elements.append(PageBreak())
-
-            doc.build(elements)
-            buffer.seek(0)
-
-            st.download_button(
-                label="📄 Descargar PDF A4 Vertical (Día al lado izquierdo del DNI)",
-                data=buffer,
-                file_name="Hoja_HIS_A4_Vertical_Dia_Izq.pdf",
-                mime="application/pdf"
-            )
+                    ('VALIGN', (0,0),
