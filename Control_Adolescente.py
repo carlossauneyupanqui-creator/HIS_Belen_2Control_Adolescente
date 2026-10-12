@@ -220,7 +220,7 @@ with st.form("form_paciente", clear_on_submit=True):
                 labs = ["", "", "", "", "2", "", "1", "2", "", "", ""]
                 prds = [tipo_letra] * 9 + ["", ""]
 
-            else:  # 3er Control (99801 agrupado con lab TA/2/1)
+            else:  # 3er Control
                 codigos = [
                     "Z003", "99384", "99801",
                     "99384.02", "99402.03", "99402.05", "99402.08",
@@ -241,7 +241,6 @@ with st.form("form_paciente", clear_on_submit=True):
                     "", "2", "", "2",
                     "", "", "", ""
                 ]
-                # Marcar con 'P' o la letra elegida solo las filas activas (primeras 7 filas)
                 prds = [tipo_letra] * 7 + ["", "", "", ""]
 
             nuevo_paciente = {
@@ -420,16 +419,14 @@ if len(st.session_state.lista_pacientes) > 0:
                             Paragraph(prd, cell_center)
                         ])
 
+                    # PADDING Y ESTILOS UNIFORMES PARA TODAS LAS FILAS DE LA SUBTABLA
                     sub_style = [
                         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-                        ('TOPPADDING', (0,0), (-1,-1), 1),
-                        ('BOTTOMPADDING', (0,0), (-1,-1), 1),
+                        ('TOPPADDING', (0,0), (-1,-1), 2.5),
+                        ('BOTTOMPADDING', (0,0), (-1,-1), 2.5),
                         ('LEFTPADDING', (0,0), (-1,-1), 1),
                         ('RIGHTPADDING', (0,0), (-1,-1), 1),
                     ]
-                    
-                    sub_style.append(('TOPPADDING', (0, 9), (-1, 10), 6.5))
-                    sub_style.append(('BOTTOMPADDING', (0, 9), (-1, 10), 6.5))
 
                     for i in range(len(sub_rows) - 1):
                         sub_style.append(('LINEBELOW', (0, i), (-1, i), 0.25, colors.HexColor('#cbd5e0')))
