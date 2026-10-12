@@ -112,7 +112,7 @@ tipo_control = st.radio(
     "Elija el número de control:",
     ["1er Control", "2do Control", "3er Control"],
     horizontal=True,
-    index=2  # Por defecto seleccionado en 3er Control
+    index=1  # Por defecto seleccionado en 2do Control
 )
 
 st.markdown("---")
@@ -199,17 +199,50 @@ with st.form("form_paciente", clear_on_submit=True):
                     "<br/>", "<br/>"
                 ]
                 labs = ["", "1", "", "", "", "", "1", "", "1", "", ""]
+                prds = [tipo_letra] * 9 + ["", ""]
 
             elif tipo_control == "2do Control":
-                codigos = ["Z003", "99384", "99402.09", "99403.01", "", "", "", "", "", "", ""]
+                # CÓDIGOS Y LABS SEGÚN LA MATRIZ DEL 2DO CONTROL
+                codigos = [
+                    "96150.01",
+                    "96150.02",
+                    "96150.03",
+                    "96150.05",
+                    "99384",
+                    "99401.15",
+                    "99402.09",
+                    "99403.01",
+                    "Z003",
+                    "",
+                    ""
+                ]
                 descripciones = [
-                    "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
-                    "ATENCIÓN INTEGRAL DEL ADOLESCENTE",
+                    "TAMIZAJE DE SALUD MENTAL EN VIOLENCIA",
+                    "TAMIZAJE DE SALUD MENTAL EN ALCOHOL Y DROGAS",
+                    "TAMIZAJE DE SALUD MENTAL EN TRASTORNOS DEPRESIVOS",
+                    "TAMIZAJE DE SALUD MENTAL EN HABILIDADES SOCIALES",
+                    "ATENCIÓN INICIAL Y EXHAUSTIVA DE MEDICINA PREVENTIVA",
+                    "CONSEJERÍA EN HABILIDADES SOCIALES",
                     "CONSEJERÍA DE PREVENCIÓN DE RIESGOS EN SALUD MENTAL",
                     "CONSEJERÍA NUTRICIONAL: ALIMENTACIÓN SALUDABLE",
-                    "<br/>", "<br/>", "<br/>", "<br/>", "<br/>", "<br/>", "<br/>"
+                    "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
+                    "<br/>",
+                    "<br/>"
                 ]
-                labs = ["", "2", "2", "2", "", "", "", "", "", "", ""]
+                labs = [
+                    "",
+                    "",
+                    "",
+                    "",
+                    "2",
+                    "",
+                    "1",
+                    "2",
+                    "",
+                    "",
+                    ""
+                ]
+                prds = [tipo_letra] * 9 + ["", ""]
 
             else:  # 3er Control
                 codigos = [
@@ -229,8 +262,7 @@ with st.form("form_paciente", clear_on_submit=True):
                     "<br/>", "<br/>"
                 ]
                 labs = ["", "3", "TA", "2", "1", "", "2", "", "2", "", ""]
-
-            prds = [tipo_letra] * (len(codigos) - 2) + ["", ""]
+                prds = [tipo_letra] * 9 + ["", ""]
 
             nuevo_paciente = {
                 "nro": len(st.session_state.lista_pacientes) + 1,
