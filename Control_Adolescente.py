@@ -220,11 +220,11 @@ with st.form("form_paciente", clear_on_submit=True):
                 labs = ["", "", "", "", "2", "", "1", "2", "", "", ""]
                 prds = [tipo_letra] * 9 + ["", ""]
 
-            else:  # 3er Control
+            else:  # 3er Control (Exactamente 7 líneas con contenido + 2 líneas en blanco)
                 codigos = [
                     "Z003", "99384", "99801",
                     "99384.02", "99402.03", "99402.05", "99402.08",
-                    "", "", "", ""
+                    "", ""
                 ]
                 descripciones = [
                     "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
@@ -234,14 +234,14 @@ with st.form("form_paciente", clear_on_submit=True):
                     "CONSEJERÍA EN SALUD SEXUAL Y REPRODUCTIVA",
                     "CONSEJERÍA DE PREVENCIÓN DE ENFERMEDADES NO TRANSMISIBLES",
                     "CONSEJERÍA EN SALUD MENTAL Y ESTILOS DE VIDA SALUDABLES",
-                    "<br/>", "<br/>", "<br/>", "<br/>"
+                    "<br/>", "<br/>"
                 ]
                 labs = [
                     "", "3", "TA/2/1",
                     "", "2", "", "2",
-                    "", "", "", ""
+                    "", ""
                 ]
-                prds = [tipo_letra] * 7 + ["", "", "", ""]
+                prds = [tipo_letra] * 7 + ["", ""]
 
             nuevo_paciente = {
                 "nro": len(st.session_state.lista_pacientes) + 1,
