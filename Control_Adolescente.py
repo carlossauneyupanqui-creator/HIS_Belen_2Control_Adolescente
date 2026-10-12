@@ -316,4 +316,136 @@ if len(st.session_state.lista_pacientes) > 0:
                 t_right = Table(top_right_data, colWidths=[120], rowHeights=[12, 22, 12])
                 t_right.setStyle(TableStyle([
                     ('GRID', (0,0), (-1,-1), 0.4, colors.black),
-                    ('VALIGN', (0,0),
+                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                    ('BACKGROUND', (0,0), (0,0), colors.HexColor('#f0f0f0')),
+                ]))
+
+                t_header_main = Table([[t_left, t_mid, t_right]], colWidths=[79, 279, 120])
+                t_header_main.setStyle(TableStyle([
+                    ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                    ('LEFTPADDING', (0,0), (-1,-1), 0),
+                    ('RIGHTPADDING', (0,0), (-1,-1), 0),
+                ]))
+                elements.append(t_header_main)
+                elements.append(Spacer(1, 4))
+
+                meta_data = [
+                    [
+                        Paragraph("<b>2. AÑO</b>", header_style),
+                        Paragraph("<b>3. MES</b>", header_style),
+                        Paragraph("<b>4. NOMBRE DE ESTABLECIMIENTO DE SALUD (IPRESS)</b>", header_style),
+                        Paragraph("<b>5. UNIDAD PRODUCTORA DE SERVICIOS (UPSS)</b>", header_style),
+                        Paragraph("<b>6. NOMBRE DEL RESPONSABLE DE LA ATENCIÓN</b>", header_style)
+                    ],
+                    [
+                        Paragraph(anio, cell_style),
+                        Paragraph(mes.upper(), cell_style),
+                        Paragraph(centro_salud, cell_style),
+                        Paragraph("OBSTETRICIA", cell_style),
+                        Paragraph(f"{dni_seleccionado} - {nombre_sugerido}", cell_style)
+                    ]
+                ]
+                t_meta = Table(meta_data, colWidths=[30, 50, 150, 100, 148])
+                t_meta.setStyle(TableStyle([
+                    ('GRID', (0,0), (-1,-1), 0.4, colors.black),
+                    ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#e2e8f0')),
+                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                    ('TOPPADDING', (0,0), (-1,-1), 2.5),
+                    ('BOTTOMPADDING', (0,0), (-1,-1), 2.5),
+                ]))
+                elements.append(t_meta)
+                elements.append(Spacer(1, 4))
+
+                headers = [
+                    Paragraph("<b>N°</b>", header_style),
+                    Paragraph("<b>Día</b>", header_style),
+                    Paragraph("<b>DNI</b>", header_style),
+                    Paragraph("<b>Nombres y Apellidos del Paciente</b>", header_style),
+                    Paragraph("<b>Edad</b>", header_style),
+                    Paragraph("<b>Sexo</b>", header_style),
+                    Paragraph("<b>Antropometría / Hb</b>", header_style),
+                    Paragraph("<b>N/C/R</b>", header_style),
+                    Paragraph("<b>CIE / CPT</b>", header_style),
+                    Paragraph("<b>Actividades / Diagnósticos</b>", header_style),
+                    Paragraph("<b>Lab</b>", header_style),
+                    Paragraph("<b>P/D/R</b>", header_style)
+                ]
+
+                table_data = [headers]
+                
+                for p in chunk:
+                    sub_rows = []
+                    for idx, (cod, desc, lab, prd) in enumerate(zip(p["codigos"], p["descripciones"], p["labs"], p["prds"])):
+                        sub_rows.append([
+                            Paragraph(cod, cell_center),
+                            Paragraph(desc, cell_style),
+                            Paragraph(lab, cell_center),
+                            Paragraph(prd, cell_center)
+                        ])
+
+                    sub_style = [
+                        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                        ('TOPPADDING', (0,0), (-1,-1), 1),
+                        ('BOTTOMPADDING', (0,0), (-1,-1), 1),
+                        ('LEFTPADDING', (0,0), (-1,-1), 1),
+                        ('RIGHTPADDING', (0,0), (-1,-1), 1),
+                    ]
+                    
+                    sub_style.append(('TOPPADDING', (0, 9), (-1, 10), 6.5))
+                    sub_style.append(('BOTTOMPADDING', (0, 9), (-1, 10), 6.5))
+
+                    for i in range(len(sub_rows) - 1):
+                        sub_style.append(('LINEBELOW', (0, i), (-1, i), 0.25, colors.HexColor('#cbd5e0')))
+
+                    t_sub_paciente = Table(sub_rows, colWidths=[40, 114, 18, 18])
+                    t_sub_paciente.setStyle(TableStyle(sub_style))
+
+                    table_data.append([
+                        Paragraph(str(p["nro"]), cell_center),
+                        Paragraph(p["dia_atencion"], cell_center),
+                        Paragraph(p["dni"], cell_center),
+                        Paragraph(p["nombres"], cell_style),
+                        Paragraph(str(p["edad"]), cell_edad),
+                        Paragraph(p["sexo"], cell_center),
+                        Paragraph(p["antropometria"], cell_center),
+                        Paragraph(p["condicion"], cell_center),
+                        t_sub_paciente, "", "", ""
+                    ])
+
+                t = Table(table_data, colWidths=[15, 20, 42, 85, 23, 18, 60, 21, 40, 114, 18, 22])
+                
+                t_style_commands = [
+                    ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#2b6cb0')),
+                    ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                    ('GRID', (0,0), (-1,-1), 0.4, colors.black),
+                    ('TOPPADDING', (0,0), (-1,-1), 1),
+                    ('BOTTOMPADDING', (0,0), (-1,-1), 1),
+                    ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#f7fafc')])
+                ]
+                
+                for row_idx in range(1, len(chunk) + 1):
+                    t_style_commands.append(('SPAN', (8, row_idx), (11, row_idx)))
+                    t_style_commands.append(('LEFTPADDING', (8, row_idx), (11, row_idx), 0))
+                    t_style_commands.append(('RIGHTPADDING', (8, row_idx), (11, row_idx), 0))
+                    t_style_commands.append(('TOPPADDING', (8, row_idx), (11, row_idx), 0))
+                    t_style_commands.append(('BOTTOMPADDING', (8, row_idx), (11, row_idx), 0))
+
+                t.setStyle(TableStyle(t_style_commands))
+                elements.append(t)
+
+                if page_idx < len(chunks) - 1:
+                    elements.append(PageBreak())
+
+            doc.build(elements)
+            buffer.seek(0)
+
+            st.download_button(
+                label="📄 Descargar PDF A4 Vertical (3er Control)",
+                data=buffer,
+                file_name="3er_Control_Adolescente_HIS.pdf",
+                mime="application/pdf"
+            )
