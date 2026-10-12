@@ -112,7 +112,7 @@ tipo_control = st.radio(
     "Elija el número de control:",
     ["1er Control", "2do Control", "3er Control"],
     horizontal=True,
-    index=1  # Por defecto seleccionado en 2do Control
+    index=2
 )
 
 st.markdown("---")
@@ -183,7 +183,6 @@ with st.form("form_paciente", clear_on_submit=True):
             ]
             antropometria_text = "<br/>".join(lineas_antropometria)
 
-            # LÓGICA DE CÓDIGOS SEGÚN EL CONTROL SELECCIONADO
             if tipo_control == "1er Control":
                 codigos = ["Z003", "99384", "96150.01", "96150.02", "96150.03", "96150.05", "99402.09", "99401.15", "99403.01", "", ""]
                 descripciones = [
@@ -202,19 +201,9 @@ with st.form("form_paciente", clear_on_submit=True):
                 prds = [tipo_letra] * 9 + ["", ""]
 
             elif tipo_control == "2do Control":
-                # CÓDIGOS Y LABS SEGÚN LA MATRIZ DEL 2DO CONTROL
                 codigos = [
-                    "96150.01",
-                    "96150.02",
-                    "96150.03",
-                    "96150.05",
-                    "99384",
-                    "99401.15",
-                    "99402.09",
-                    "99403.01",
-                    "Z003",
-                    "",
-                    ""
+                    "96150.01", "96150.02", "96150.03", "96150.05",
+                    "99384", "99401.15", "99402.09", "99403.01", "Z003", "", ""
                 ]
                 descripciones = [
                     "TAMIZAJE DE SALUD MENTAL EN VIOLENCIA",
@@ -226,43 +215,34 @@ with st.form("form_paciente", clear_on_submit=True):
                     "CONSEJERÍA DE PREVENCIÓN DE RIESGOS EN SALUD MENTAL",
                     "CONSEJERÍA NUTRICIONAL: ALIMENTACIÓN SALUDABLE",
                     "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
-                    "<br/>",
-                    "<br/>"
+                    "<br/>", "<br/>"
                 ]
-                labs = [
-                    "",
-                    "",
-                    "",
-                    "",
-                    "2",
-                    "",
-                    "1",
-                    "2",
-                    "",
-                    "",
-                    ""
-                ]
+                labs = ["", "", "", "", "2", "", "1", "2", "", "", ""]
                 prds = [tipo_letra] * 9 + ["", ""]
 
-            else:  # 3er Control
+            else:  # 3er Control (99801 agrupado con lab TA/2/1)
                 codigos = [
-                    "Z003", "99384", "99801", "99801", "99801",
-                    "99384.02", "99402.03", "99402.05", "99402.08", "", ""
+                    "Z003", "99384", "99801",
+                    "99384.02", "99402.03", "99402.05", "99402.08",
+                    "", "", "", ""
                 ]
                 descripciones = [
                     "EXAMEN DEL ESTADO DE DESARROLLO DEL ADOLESCENTE",
                     "ATENCIÓN INTEGRAL DEL ADOLESCENTE",
-                    "EVALUACIÓN DE LA PRESIÓN ARTERIAL",
-                    "EVALUACIÓN DEL DESARROLLO SEXUAL (TANNER)",
-                    "EVALUACIÓN DE LA AGUDEZA VISUAL",
+                    "EVALUACIÓN DE LA PRESIÓN ARTERIAL / TANNER / AGUDEZA VISUAL",
                     "EVALUACIÓN DE LA SALUD OCUPACIONAL / ESTUDIOS",
                     "CONSEJERÍA EN SALUD SEXUAL Y REPRODUCTIVA",
                     "CONSEJERÍA DE PREVENCIÓN DE ENFERMEDADES NO TRANSMISIBLES",
                     "CONSEJERÍA EN SALUD MENTAL Y ESTILOS DE VIDA SALUDABLES",
-                    "<br/>", "<br/>"
+                    "<br/>", "<br/>", "<br/>", "<br/>"
                 ]
-                labs = ["", "3", "TA", "2", "1", "", "2", "", "2", "", ""]
-                prds = [tipo_letra] * 9 + ["", ""]
+                labs = [
+                    "", "3", "TA/2/1",
+                    "", "2", "", "2",
+                    "", "", "", ""
+                ]
+                # Marcar con 'P' o la letra elegida solo las filas activas (primeras 7 filas)
+                prds = [tipo_letra] * 7 + ["", "", "", ""]
 
             nuevo_paciente = {
                 "nro": len(st.session_state.lista_pacientes) + 1,
